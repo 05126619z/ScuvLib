@@ -8,28 +8,30 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
-namespace SkateScav
+namespace ScuvLib
 {
     [BepInPlugin(modGUID, modName, modVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string modGUID = "05126619z.SkateScav";
-        private const string modName = "SkateScav";
-        private const string modVersion = "1.0.0";
+        private readonly Harmony _harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
 
-        public static ManualLogSource logger;
-        private Harmony harmony;
-        public static AssetBundle MyAssetBundle { get; private set; }
-        public static string AssetsFolderPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Assets");
+        /// <summary>
+        /// The Scuvlib plugin instance.
+        /// </summary>
+        public static Plugin Instance { get; private set; } = null!;
 
-        public void Awake()
+#pragma warning disable IDE0051 // Remove unused private members
+        private void Awake()
+#pragma warning restore IDE0051 // Remove unused private members
         {
-            MyAssetBundle = AssetBundle.LoadFromFile(Path.Combine(AssetsFolderPath, "myassetbundle"));
-            logger = Logger;
-            //logger.LogInfo(Plugin.MyAssetBundle.LoadAsset<AudioClip>("assets/sounds/lobotomy.mp3"));
-            harmony = new Harmony(modGUID);
-            harmony.PatchAll();
-            Logger.LogInfo($"Plugin {modName} is loaded!");
+            Instance = this;
+
+            ScuvLib.Logger.Initialize(BepInEx.Logging.Logger.CreateLogSource(MyPluginInfo.PLUGIN_GUID));
+            ScuvLib.Logger.LogInfo($"{MyPluginInfo.PLUGIN_NAME} has awoken!");
+
+            ConfigManager.Initialize(Config);
+
+            BundleLoader.LoadAllBundles(Paths.PluginPath, ".scavbundle");
         }
 
     }
